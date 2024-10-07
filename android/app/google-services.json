@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "787517453402",
+    "project_id": "campus-coach-f5348",
+    "storage_bucket": "campus-coach-f5348.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787517453402:android:648844101e520a77fb1463",
+        "android_client_info": {
+          "package_name": "com.example.campus_coach_login_01"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSxCvDVjytmXWvGmlaU1bHsqjSNHt-h04"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
