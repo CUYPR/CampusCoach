@@ -14,6 +14,7 @@ class PlayerHomePage extends StatefulWidget {
 
 class _PlayerHomePageState extends State<PlayerHomePage> {
   String _playerName = '';
+  String _playerRole = '';
   bool _isLoading = true;
 
   @override
@@ -38,11 +39,13 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
         if (userDoc.exists) {
           setState(() {
             _playerName = userDoc.data()?['name'] ?? 'Player';
+            _playerRole = userDoc.data()?['role'] ?? 'something0';
             _isLoading = false;
           });
         } else {
           setState(() {
             _playerName = 'Player';
+            _playerRole = 'Something';
             _isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
@@ -52,6 +55,7 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
       } else {
         setState(() {
           _playerName = 'Player';
+          _playerRole = 'Something2';
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -61,6 +65,7 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
     } catch (e) {
       setState(() {
         _playerName = 'Player';
+        _playerRole = 'Something3';
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -95,7 +100,7 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
         child: _isLoading
             ? const CircularProgressIndicator()
             : Text(
-          'Welcome, $_playerName!',
+          'Welcome, $_playerName! Role: $_playerRole',
           style: const TextStyle(fontSize: 24),
         ),
       ),

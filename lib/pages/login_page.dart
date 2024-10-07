@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'coach_home_page.dart'; // Import CoachHomePage
 import 'player_home_page.dart'; // Import PlayerHomePage
+import 'update_password_page.dart'; // Import UpdatePasswordPage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -47,23 +48,32 @@ class _LoginPageState extends State<LoginPage> {
 
         if (userData.exists) {
           String role = userData.data()?['role'] ?? 'No Role';
+          bool isFirstLogin = userData.data()?['isFirstLogin'] ?? false;
 
-          // Navigate based on role
-          if (role == 'Coach') {
+          if (isFirstLogin) {
+            // Navigate to UpdatePasswordPage
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const CoachHomePage()),
-            );
-          } else if (role == 'Player') {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const PlayerHomePage()),
+              MaterialPageRoute(builder: (context) => const UpdatePasswordPage()),
             );
           } else {
-            // Handle unknown role
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Unknown role. Please contact support.')),
-            );
+            // Navigate based on role
+            if (role == 'Coach') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const CoachHomePage()),
+              );
+            } else if (role == 'Player') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const PlayerHomePage()),
+              );
+            } else {
+              // Handle unknown role
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Unknown role. Please contact support.')),
+              );
+            }
           }
         } else {
           // User data not found
@@ -144,7 +154,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Center(
               child: Image.asset(
                 'assets/images/CHRISTLogo_colored.png', // Your logo asset
-                width: screenSize.width * 0.75, // 70% of screen width
+                width: screenSize.width * 0.75, // 75% of screen width
                 height: screenSize.width * 0.75, // Maintain aspect ratio
                 fit: BoxFit.contain,
               ),
@@ -160,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                 Image.asset(
                   'assets/images/CustomShape1.png',
                   width: screenSize.width,
-                  height: screenSize.height * 0.55, // 50% of screen height
+                  height: screenSize.height * 0.55, // 55% of screen height
                   fit: BoxFit.cover,
                 ),
                 // The Content Inside the Shape
@@ -241,9 +251,9 @@ class _LoginPageState extends State<LoginPage> {
                           child: ElevatedButton(
                             onPressed: _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF566DA1), // Button background color (Hex color)
+                              backgroundColor: const Color(0xFF566DA1), // Button background color (Hex color)
                               foregroundColor: Colors.white, // Text color
-                              padding: EdgeInsets.symmetric(vertical: 16.0), // Padding inside the button
+                              padding: const EdgeInsets.symmetric(vertical: 16.0), // Padding inside the button
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.0), // Rounded corners (radius)
                               ),
@@ -258,7 +268,6 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
-
                       ],
                     ),
                   ),
