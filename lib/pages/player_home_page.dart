@@ -97,7 +97,7 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
       appBar: AppBar(
         title: _isLoading
             ? const Text('Player Home')
-            : Text('Player Home'),
+            : const Text('Player Home'),
         backgroundColor: Colors.white,
         actions: [
           IconButton(

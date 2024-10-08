@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 class LeavePage extends StatelessWidget {
-  const LeavePage({Key? key}) : super(key: key);
+  const LeavePage({super.key});
 
   @override
   Widget build(BuildContext context) {

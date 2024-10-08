@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'coach_home_page.dart';
 import 'player_home_page.dart';
-import 'login_page.dart'; // For navigation in case of errors or re-authentication
+// For navigation in case of errors or re-authentication
 
 class UpdatePasswordPage extends StatefulWidget {
   const UpdatePasswordPage({super.key});
@@ -156,7 +156,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // "Update Password" Text
-                Text(
+                const Text(
                   'Update Password',
                   textAlign: TextAlign.center,
                   style: TextStyle(
