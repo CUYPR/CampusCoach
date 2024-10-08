@@ -176,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                 Image.asset(
                   'assets/images/CustomShape1.png',
                   width: screenSize.width,
-                  height: screenSize.height * 0.55, // 55% of screen height
+                  height: screenSize.height * 0.60, // 55% of screen height
                   fit: BoxFit.cover,
                 ),
                 // The Content Inside the Shape

@@ -208,8 +208,11 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                 }
 
                 // Create a new user in Firebase Authentication with the login email
-                await _auth.createUserWithEmailAndPassword(
+                UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
                     email: loginEmail, password: 'Temporary@123'); // Use a strong temporary password
+
+                User? newUser = userCredential.user;
+                String newUserUid = newUser?.uid ?? '';
 
                 // After creating the user, Firebase automatically signs in as the new user
                 // We need to sign back in as the Admin
@@ -219,17 +222,10 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                 await _auth.signInWithEmailAndPassword(
                     email: adminEmail, password: adminPassword);
 
-                User? newUser = await _auth.fetchSignInMethodsForEmail(loginEmail).then((methods) {
-                  if (methods.isNotEmpty) {
-                    return _auth.currentUser;
-                  }
-                  return null;
-                });
-
-                if (newUser != null) {
+                if (newUserUid.isNotEmpty) {
                   // Add user details to Firestore
-                  await _firestore.collection('users').doc(newUser.uid).set({
-                    'uid': newUser.uid,
+                  await _firestore.collection('users').doc(newUserUid).set({
+                    'uid': newUserUid,
                     'name': name,
                     'cuEmail': cuEmail,
                     'email': loginEmail, // Login email
@@ -253,6 +249,10 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                   // Refresh Admin's authentication state
                   await _auth.currentUser!.reload();
                   await _fetchCurrentUserDetails();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Failed to create user.')),
+                  );
                 }
               } on FirebaseAuthException catch (e) {
                 String message = '';

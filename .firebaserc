@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "campus-coach-f5348",
+    "CampusCoachApp": "campus-coach-f5348"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}
