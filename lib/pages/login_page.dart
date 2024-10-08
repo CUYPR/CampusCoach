@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'coach_home_page.dart'; // Import CoachHomePage
 import 'player_home_page.dart'; // Import PlayerHomePage
 import 'update_password_page.dart'; // Import UpdatePasswordPage
+import 'admin_home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -67,6 +68,11 @@ class _LoginPageState extends State<LoginPage> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const PlayerHomePage()),
+              );
+            } else if (role == 'Admin') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminPage()),
               );
             } else {
               // Handle unknown role
