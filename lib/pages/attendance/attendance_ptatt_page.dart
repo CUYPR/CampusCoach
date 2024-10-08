@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'attendance_display.dart';
 
-class main_attendance_ptatt extends StatefulWidget {
-  const main_attendance_ptatt({super.key});
+class attendance_ptatt extends StatefulWidget {
+  const attendance_ptatt({super.key});
 
   @override
-  State<main_attendance_ptatt> createState() => _main_attendance_ptattState();
+  State<attendance_ptatt> createState() => _attendance_ptattState();
 }
 
-class _main_attendance_ptattState extends State<main_attendance_ptatt> {
+class _attendance_ptattState extends State<attendance_ptatt> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
