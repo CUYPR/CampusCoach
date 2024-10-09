@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'login_page.dart'; // Ensure you have this page for logout functionality
+import '../login_page.dart'; // Ensure you have this page for logout functionality
 import 'package:url_launcher/url_launcher.dart'; // Add this package to launch URLs
 
 class ManageUsersPage extends StatefulWidget {

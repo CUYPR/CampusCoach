@@ -1,62 +1,63 @@
-// lib/pages/attendance_page.dart
+// lib/pages/player_home_page.dart
 
 import 'package:flutter/material.dart';
+import '../../login_page.dart'; // For logout navigation
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'attendance/attendance_myatt_page.dart';
-import 'attendance/attendance_myabs_page.dart';
-import 'attendance/attendance_ptatt_page.dart';
-import 'attendance/attendance_upses_page.dart';
-import 'login_page.dart'; // For logout functionality
+import 'attendance_page.dart'; // Ensure these imports point to your actual page files
+import 'leave_page.dart';
+import 'analysis_page.dart';
+import 'team_page.dart';
 
-class AttendancePage extends StatefulWidget {
-  const AttendancePage({super.key});
+class PlayerHomePage extends StatefulWidget {
+  const PlayerHomePage({super.key});
 
   @override
-  _AttendancePageState createState() => _AttendancePageState();
+  _PlayerHomePageState createState() => _PlayerHomePageState();
 }
 
-class _AttendancePageState extends State<AttendancePage> {
+class _PlayerHomePageState extends State<PlayerHomePage> {
   String _playerName = '';
   String _playerRegNo = '';
   bool _isLoading = true;
-  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchPlayerData();
+    _fetchPlayerName();
   }
 
-  Future<void> _fetchPlayerData() async {
+  Future<void> _fetchPlayerName() async {
     try {
-      // Get the current authenticated user
+      // Get the current user
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         String uid = user.uid;
 
-        // Fetch the user's document from Firestore
+        // Fetch the user document from Firestore
         DocumentSnapshot<Map<String, dynamic>> userDoc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
         if (userDoc.exists) {
           setState(() {
             _playerName = userDoc.data()?['name'] ?? 'Player';
-            _playerRegNo = userDoc.data()?['regNo'] ?? 'N/A';
+            _playerRegNo = userDoc.data()?['regNo'] ?? 'E404';
             _isLoading = false;
           });
         } else {
           setState(() {
-            _errorMessage = 'User data not found in Firestore.';
+            _playerName = 'Player';
+            _playerRegNo = 'E404_1';
             _isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User data not found. Please contact admin.')),
+            const SnackBar(content: Text('User data not found.')),
           );
         }
       } else {
         setState(() {
-          _errorMessage = 'No user is currently signed in.';
+          _playerName = 'Player';
+          _playerRegNo = 'E404_2';
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +66,8 @@ class _AttendancePageState extends State<AttendancePage> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error fetching user data: $e';
+        _playerName = 'Player';
+        _playerRegNo = 'E404_3';
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,8 +96,8 @@ class _AttendancePageState extends State<AttendancePage> {
     return Scaffold(
       appBar: AppBar(
         title: _isLoading
-            ? const Text('Attendance')
-            : Text('Attendance - $_playerName'),
+            ? const Text('Player Home')
+            : const Text('Player Home'),
         backgroundColor: Colors.white,
         actions: [
           IconButton(
@@ -107,14 +109,6 @@ class _AttendancePageState extends State<AttendancePage> {
       backgroundColor: Colors.white,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-          ? Center(
-        child: Text(
-          _errorMessage,
-          style: const TextStyle(color: Colors.red, fontSize: 16),
-          textAlign: TextAlign.center,
-        ),
-      )
           : SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -142,14 +136,12 @@ class _AttendancePageState extends State<AttendancePage> {
                   children: [
                     // Profile Info
                     Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Name and Registration Number
+                        // Name and ID
                         Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               _playerName,
@@ -162,7 +154,7 @@ class _AttendancePageState extends State<AttendancePage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              _playerRegNo,
+                              _playerRegNo, // Replace with dynamic ID if available
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: smallTextSize,
@@ -186,17 +178,8 @@ class _AttendancePageState extends State<AttendancePage> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(30),
                             child: Image.asset(
-                              'assets/images/IMG_3976.JPG',
+                              'assets/images/IMG_3976.JPG', // Ensure the image exists
                               fit: BoxFit.cover,
-                              errorBuilder:
-                                  (context, error, stackTrace) {
-                                return const Center(
-                                    child: Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Colors.grey,
-                                    ));
-                              },
                             ),
                           ),
                         ),
@@ -205,10 +188,9 @@ class _AttendancePageState extends State<AttendancePage> {
                     const SizedBox(height: 20),
                     // Stats Row
                     Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        // Overall Attendance
+                        // Overall
                         Column(
                           children: [
                             Text(
@@ -230,7 +212,7 @@ class _AttendancePageState extends State<AttendancePage> {
                             ),
                           ],
                         ),
-                        // Present Days
+                        // Present
                         Column(
                           children: [
                             Text(
@@ -252,7 +234,7 @@ class _AttendancePageState extends State<AttendancePage> {
                             ),
                           ],
                         ),
-                        // Total Days
+                        // Total
                         Column(
                           children: [
                             Text(
@@ -280,11 +262,11 @@ class _AttendancePageState extends State<AttendancePage> {
                 ),
               ),
               SizedBox(height: screenSize.height * 0.03),
-              // First Row of Buttons (My Attendance and Absent Details)
+              // First Row of Buttons (Attendance and Leave)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // My Attendance Button
+                  // Attendance Button
                   Expanded(
                     child: Container(
                       height: screenSize.height * 0.17,
@@ -295,7 +277,7 @@ class _AttendancePageState extends State<AttendancePage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                const attendance_myatt()),
+                                const AttendancePage()),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -312,7 +294,7 @@ class _AttendancePageState extends State<AttendancePage> {
                               top: 25,
                               left: 12,
                               child: Text(
-                                'My\nAttendance',
+                                'Attendance',
                                 style: TextStyle(
                                   fontSize: smallTextSize + 7,
                                   fontWeight: FontWeight.bold,
@@ -324,8 +306,8 @@ class _AttendancePageState extends State<AttendancePage> {
                               bottom: 8,
                               right: 9,
                               child: Icon(
-                                Icons.arrow_circle_right,
-                                size: screenSize.height * 0.03,
+                                Icons.class_outlined,
+                                size: screenSize.height * 0.06,
                                 color: const Color(0xFF6F83B1),
                               ),
                             ),
@@ -335,7 +317,7 @@ class _AttendancePageState extends State<AttendancePage> {
                     ),
                   ),
                   SizedBox(width: screenSize.width * 0.03),
-                  // Absent Details Button
+                  // Leave Button
                   Expanded(
                     child: Container(
                       height: screenSize.height * 0.17,
@@ -345,8 +327,7 @@ class _AttendancePageState extends State<AttendancePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                const attendance_myabs()),
+                                builder: (context) => const LeavePage()),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -363,12 +344,11 @@ class _AttendancePageState extends State<AttendancePage> {
                               top: 25,
                               left: 12,
                               child: Text(
-                                'Absent\nDetails',
+                                'Leave',
                                 style: TextStyle(
                                   fontSize: smallTextSize + 7,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Open_Sans',
-                                  height: 0.9,
                                 ),
                               ),
                             ),
@@ -376,8 +356,8 @@ class _AttendancePageState extends State<AttendancePage> {
                               bottom: 8,
                               right: 9,
                               child: Icon(
-                                Icons.arrow_circle_right,
-                                size: screenSize.height * 0.03,
+                                Icons.file_copy_outlined,
+                                size: screenSize.height * 0.06,
                                 color: const Color(0xFF6F83B1),
                               ),
                             ),
@@ -389,11 +369,11 @@ class _AttendancePageState extends State<AttendancePage> {
                 ],
               ),
               SizedBox(height: screenSize.height * 0.023),
-              // Second Row of Buttons (Previous Term Attendance and Upcoming Sessions)
+              // Second Row of Buttons (Analysis and Team)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Previous Term Attendance Button
+                  // Analysis Button
                   Expanded(
                     child: Container(
                       height: screenSize.height * 0.17,
@@ -403,8 +383,7 @@ class _AttendancePageState extends State<AttendancePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                const attendance_ptatt()),
+                                builder: (context) => const AnalysisPage()),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -421,12 +400,11 @@ class _AttendancePageState extends State<AttendancePage> {
                               top: 25,
                               left: 12,
                               child: Text(
-                                'Previous\nTerm\nAttendance',
+                                'Analysis',
                                 style: TextStyle(
                                   fontSize: smallTextSize + 7,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Open_Sans',
-                                  height: 0.9,
                                 ),
                               ),
                             ),
@@ -434,8 +412,8 @@ class _AttendancePageState extends State<AttendancePage> {
                               bottom: 8,
                               right: 9,
                               child: Icon(
-                                Icons.arrow_circle_right,
-                                size: screenSize.height * 0.03,
+                                Icons.auto_graph_outlined,
+                                size: screenSize.height * 0.06,
                                 color: const Color(0xFF6F83B1),
                               ),
                             ),
@@ -445,7 +423,7 @@ class _AttendancePageState extends State<AttendancePage> {
                     ),
                   ),
                   SizedBox(width: screenSize.width * 0.03),
-                  // Upcoming Sessions Button
+                  // Team Button
                   Expanded(
                     child: Container(
                       height: screenSize.height * 0.17,
@@ -455,8 +433,7 @@ class _AttendancePageState extends State<AttendancePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                const attendance_upses()),
+                                builder: (context) => const TeamPage()),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -473,12 +450,11 @@ class _AttendancePageState extends State<AttendancePage> {
                               top: 25,
                               left: 12,
                               child: Text(
-                                'Upcoming\nSessions',
+                                'Team',
                                 style: TextStyle(
                                   fontSize: smallTextSize + 7,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Open_Sans',
-                                  height: 0.9,
                                 ),
                               ),
                             ),
@@ -486,8 +462,8 @@ class _AttendancePageState extends State<AttendancePage> {
                               bottom: 8,
                               right: 9,
                               child: Icon(
-                                Icons.arrow_circle_right,
-                                size: screenSize.height * 0.03,
+                                Icons.people_alt_outlined,
+                                size: screenSize.height * 0.06,
                                 color: const Color(0xFF6F83B1),
                               ),
                             ),

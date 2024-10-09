@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'coach_home_page.dart'; // Import CoachHomePage
-import 'player_home_page.dart'; // Import PlayerHomePage
-import 'update_password_page.dart'; // Import UpdatePasswordPage
-import 'admin_home_page.dart';
+import 'pages/Old_Page/coach_home_page.dart'; // Import CoachHomePage
+import 'pages/Student_MainHomePage.dart'; // Import PlayerHomePage
+import 'pages/update_password_page.dart'; // Import UpdatePasswordPage
+import 'pages/admin_home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
             } else if (role == 'Player') {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const PlayerHomePage()),
+                MaterialPageRoute(builder: (context) => PlayerHomePage()),
               );
             } else if (role == 'Admin') {
               Navigator.pushReplacement(

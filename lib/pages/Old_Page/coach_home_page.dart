@@ -1,7 +1,7 @@
 // lib/pages/coach_home_page.dart
 
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // For logout navigation
+import '../../login_page.dart'; // For logout navigation
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
