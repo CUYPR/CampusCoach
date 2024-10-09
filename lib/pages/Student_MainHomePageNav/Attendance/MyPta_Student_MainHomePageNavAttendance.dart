@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'MyPtaAttshhet_Student_MainHomePageNavAttendance.dart';
 
 class MyPta_Student_MainHomePageNavAttendance extends StatefulWidget {
@@ -7,13 +9,106 @@ class MyPta_Student_MainHomePageNavAttendance extends StatefulWidget {
 }
 
 class _MainAttendancePtattState extends State<MyPta_Student_MainHomePageNavAttendance> {
-  // Simulated data for semesters and percentages
-  final List<Map<String, String>> _semesterData = [
-    {'semester': 'Semester 4', 'percentage': '23.38%'},
-    {'semester': 'Semester 3', 'percentage': '20.12%'},
-    {'semester': 'Semester 2', 'percentage': '18.75%'},
-    {'semester': 'Semester 1', 'percentage': '15.90%'},
-  ];
+  // List to store semester data
+  List<Map<String, String>> _semesterData = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSemesterData();
+  }
+
+  Future<void> _fetchSemesterData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String uid = user.uid;
+
+        // Reference to the attendance collection
+        CollectionReference<Map<String, dynamic>> attendanceRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('attendance');
+
+        // Fetch all semester documents
+        QuerySnapshot<Map<String, dynamic>> attendanceSnapshot = await attendanceRef.get();
+
+        List<Map<String, String>> semesterData = [];
+
+        for (var doc in attendanceSnapshot.docs) {
+          String docId = doc.id;
+
+          // Ignore 'currentSemester' document
+          if (docId == 'currentSemester') {
+            continue;
+          }
+
+          Map<String, dynamic>? data = doc.data();
+
+          double totalPresent = (data['totalPresent'] ?? 0).toDouble();
+          double totalHoursConducted = (data['totalHoursConducted'] ?? 0).toDouble();
+
+          String percentage = '0%';
+          if (totalHoursConducted > 0) {
+            double percent = (totalPresent / totalHoursConducted) * 100;
+            percentage = percent.toStringAsFixed(2) + '%';
+          }
+
+          // Convert docId to semester name
+          String semesterName = _convertDocIdToSemesterName(docId);
+
+          semesterData.add({
+            'semester': semesterName,
+            'percentage': percentage,
+            'docId': docId, // Store docId for navigation or further use
+          });
+        }
+
+        // Sort semesters in descending order (e.g., Semester 4, Semester 3, etc.)
+        semesterData.sort((a, b) => _extractSemesterNumber(b['semester']!).compareTo(_extractSemesterNumber(a['semester']!)));
+
+        setState(() {
+          _semesterData = semesterData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No user is currently signed in.')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching data: $e')),
+      );
+    }
+  }
+
+  String _convertDocIdToSemesterName(String docId) {
+    // Example: 'semester1' -> 'Semester 1'
+    if (docId.toLowerCase().startsWith('semester')) {
+      String number = docId.substring(8); // Extract the number part
+      return 'Semester $number';
+    } else {
+      // If the docId doesn't start with 'semester', return it as is
+      return docId;
+    }
+  }
+
+  int _extractSemesterNumber(String semesterName) {
+    // Extract the number from 'Semester X' for sorting purposes
+    try {
+      return int.parse(semesterName.split(' ')[1]);
+    } catch (e) {
+      return 0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +122,15 @@ class _MainAttendancePtattState extends State<MyPta_Student_MainHomePageNavAtten
       appBar: AppBar(
         title: Text('Previous Term Attendance'),
         backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Color(0xFF455781)),
+        elevation: 0,
       ),
       backgroundColor: Colors.white,
-      body: Padding(
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _semesterData.isEmpty
+          ? Center(child: Text('No previous semester data found.'))
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -42,6 +143,7 @@ class _MainAttendancePtattState extends State<MyPta_Student_MainHomePageNavAtten
                   data['percentage']!,
                   containerHeight,
                   containerWidth,
+                  data['docId']!,
                 ),
                 SizedBox(height: 16),
               ],
@@ -58,13 +160,17 @@ class _MainAttendancePtattState extends State<MyPta_Student_MainHomePageNavAtten
       String percentage,
       double height,
       double width,
+      String docId,
       ) {
     return GestureDetector(
       onTap: () {
+        // Pass the docId to the next screen if needed
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MyPtaAttshhet_Student_MainHomePageNavAttendance(),
+            builder: (context) => MyPtaAttshhet_Student_MainHomePageNavAttendance(
+              // semesterDocId: docId,
+            ),
           ),
         );
       },
