@@ -1,12 +1,116 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MyAtt_Student_MainHomePageNavAttendance extends StatefulWidget {
+  final String overall;
+  final String present;
+  final String total;
+
+  MyAtt_Student_MainHomePageNavAttendance({
+    Key? key,
+    required this.overall,
+    required this.present,
+    required this.total,
+  }) : super(key: key);
+
   @override
   _MainAttendanceMyAttState createState() => _MainAttendanceMyAttState();
 }
 
 class _MainAttendanceMyAttState extends State<MyAtt_Student_MainHomePageNavAttendance> {
   int _expandedIndex = -1;
+  List<_Item> _items = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCategoriesData();
+  }
+
+  Future<void> _fetchCategoriesData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String uid = user.uid;
+
+        // Reference to the categories collection
+        CollectionReference<Map<String, dynamic>> categoriesRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('attendance')
+            .doc('currentSemester')
+            .collection('categories');
+
+        // Fetch all categories
+        QuerySnapshot<Map<String, dynamic>> categoriesSnapshot = await categoriesRef.get();
+
+        List<_Item> items = [];
+
+        for (var doc in categoriesSnapshot.docs) {
+          String docId = doc.id;
+          Map<String, dynamic>? data = doc.data();
+
+          // Extract fields
+          double totalHoursConducted = (data['totalHoursConducted'] ?? 0).toDouble();
+          double totalPresent = (data['totalPresent'] ?? 0).toDouble();
+          double totalAbsent = (data['totalAbsent'] ?? 0).toDouble();
+
+          // Calculate percentage
+          String percentage = '0';
+          if (totalHoursConducted > 0) {
+            double percent = (totalPresent / totalHoursConducted) * 100;
+            percentage = percent.toStringAsFixed(2);
+          }
+
+          // Convert docId to display title
+          String title = _convertDocIdToTitle(docId);
+
+          // Create _Item instance
+          _Item item = _Item(
+            title: title,
+            subtitle: '$percentage%',
+            details: [
+              'Conducted: ${totalHoursConducted.toStringAsFixed(0)}',
+              'Attended: ${totalPresent.toStringAsFixed(0)}',
+              'Absent: ${totalAbsent.toStringAsFixed(0)}',
+              'Overall: $percentage%',
+            ],
+          );
+
+          items.add(item);
+        }
+
+        setState(() {
+          _items = items;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No user is currently signed in.')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching data: $e')),
+      );
+    }
+  }
+
+  // Helper function to convert docId to title
+  String _convertDocIdToTitle(String docId) {
+    // Example: 'practiceSessions' -> 'Practice Sessions'
+    String title = docId.replaceAllMapped(RegExp(r'([A-Z])'), (Match m) => ' ${m[0]}');
+    title = title[0].toUpperCase() + title.substring(1);
+    return title.trim();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,14 +118,18 @@ class _MainAttendanceMyAttState extends State<MyAtt_Student_MainHomePageNavAtten
     double screenHeight = MediaQuery.of(context).size.height;
     double largeTextSize = screenWidth * 0.08;
     double smallTextSize = screenWidth * 0.04;
-    final String overall = "87%";
-    final String present= '13';
-    final String total= '15';
+
+    // Remove the constants and use the values from the widget
+    String overall = widget.overall;
+    String present = widget.present;
+    String total = widget.total;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Attendance'),
         backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Color(0xFF455781)),
+        elevation: 0, // Remove shadow
       ),
       backgroundColor: Colors.white,
       body: Column(
@@ -40,7 +148,11 @@ class _MainAttendanceMyAttState extends State<MyAtt_Student_MainHomePageNavAtten
 
           // Expanded to prevent layout overflow
           Expanded(
-            child: ListView.builder(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : _items.isEmpty
+                ? Center(child: Text('No attendance data found.'))
+                : ListView.builder(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               itemCount: _items.length * 2, // For SizedBox after each item
               itemBuilder: (context, index) {
@@ -63,6 +175,8 @@ class _MainAttendanceMyAttState extends State<MyAtt_Student_MainHomePageNavAtten
                       highlightColor: Colors.transparent, // Remove highlight color
                     ),
                     child: ExpansionTile(
+                      key: Key('$itemIndex'), // Add a unique key
+                      initiallyExpanded: _expandedIndex == itemIndex,
                       title: Container(
                         height: screenHeight * 0.1,
                         child: Column(
@@ -94,18 +208,20 @@ class _MainAttendanceMyAttState extends State<MyAtt_Student_MainHomePageNavAtten
                           _expandedIndex = expanded ? itemIndex : -1;
                         });
                       },
-                      children: _expandedIndex == itemIndex
-                          ? _items[itemIndex].details.map((detail) {
+                      children: _items[itemIndex].details.map((detail) {
                         return Container(
                           padding: EdgeInsets.symmetric(vertical: 5, horizontal: 16),
                           alignment: Alignment.centerLeft,
                           child: Text(
                             detail,
-                            style: TextStyle(fontSize: 16, color: Color(0xFF566DA1), fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF566DA1),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         );
-                      }).toList()
-                          : [],
+                      }).toList(),
                     ),
                   ),
                 );
@@ -168,11 +284,11 @@ class AttendanceStatsContainer extends StatelessWidget {
     );
   }
 
-  Widget _buildStatColumn(String value, String label, double largeTextSize, double smallTextSize) {
+  Widget _buildStatColumn(
+      String value, String label, double largeTextSize, double smallTextSize) {
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             value,
@@ -203,36 +319,3 @@ class _Item {
 
   _Item({required this.title, required this.subtitle, required this.details});
 }
-
-final List<_Item> _items = [
-  _Item(
-    title: 'Basketball Training',
-    subtitle: '78%',
-    details: [
-      'Conducted: 21',
-      'Attended: 21',
-      'Absent: 0',
-      'Overall: 100%',
-    ],
-  ),
-  _Item(
-    title: 'Basketball Practice',
-    subtitle: '89%',
-    details: [
-      'Conducted: 21',
-      'Attended: 21',
-      'Absent: 0',
-      'Overall: 100%',
-    ],
-  ),
-  _Item(
-    title: 'Basketball Tournament',
-    subtitle: '92%',
-    details: [
-      'Conducted: 21',
-      'Attended: 21',
-      'Absent: 0',
-      'Overall: 100%',
-    ],
-  ),
-];

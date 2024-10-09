@@ -69,6 +69,7 @@ flutter:
      - assets/images/BGGra2.png
      - assets/images/CHRISTLogo_colored.png
      - assets/images/CustomShape1.png
+     - assets/images/defaultavatar.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

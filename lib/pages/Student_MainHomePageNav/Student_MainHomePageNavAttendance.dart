@@ -6,12 +6,22 @@ import 'Attendance/MyUps_Student_MainHomePageNavAttendance.dart';
 
 class Student_MainHomePageNavAttendance extends StatelessWidget {
   // Define constants
-  final String userName = 'Rudraksh';
-  final String userId = '2241340';
-  final String overall = '87%';
-  final String present = '13';
-  final String total = '15';
-  final String imageURL = 'assets/images/IMG_3976.JPG';
+  final String playerName;
+  final String playerRegNo;
+  final String overall;
+  final String present;
+  final String total;
+  final String imageURL;
+
+  Student_MainHomePageNavAttendance({
+    Key? key,
+    required this.playerName,
+    required this.playerRegNo,
+    required this.overall,
+    required this.present,
+    required this.total,
+    required this.imageURL,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +68,7 @@ class Student_MainHomePageNavAttendance extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                userName,
+                                playerName,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: largeTextSize,
@@ -67,7 +77,7 @@ class Student_MainHomePageNavAttendance extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                userId,
+                                playerRegNo,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: smallTextSize,
@@ -194,7 +204,11 @@ class Student_MainHomePageNavAttendance extends StatelessWidget {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 text: 'My\nAttendance',
-                destinationPage: MyAtt_Student_MainHomePageNavAttendance(),
+                destinationPage: MyAtt_Student_MainHomePageNavAttendance(
+                  overall: overall,
+                  present: present,
+                  total: total,
+                ),
                 icon: Icons.arrow_circle_right,
                 color: const Color(0xFF6F83B1),
                 context: context,

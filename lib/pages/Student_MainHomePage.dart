@@ -16,49 +16,88 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
 
   String _playerName = 'loading..';
   String _playerRegNo = 'loading..';
-  String _overall = '80';
-  String present = '13';
-  String total = '15';
-  String imageURL = 'assets/images/IMG_3976.JPG';
+  String _overall = '00'; // Will calculate later
+  String _present = '00'; // Updated to 'loading..' for consistency
+  String _total = '00';   // Updated to 'loading..' for consistency
+  String _imageURL = 'assets/images/defaultavatar.png'; // Skipping for now
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchPlayerName();
+    _fetchPlayerData(); // Renamed function for clarity
   }
 
-  Future<void> _fetchPlayerName() async {
+  Future<void> _fetchPlayerData() async {
     try {
       // Get the current user
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         String uid = user.uid;
 
-        // Fetch the user document from Firestore
-        DocumentSnapshot<Map<String, dynamic>> userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        // Create a reference to the user's document
+        DocumentReference<Map<String, dynamic>> userRef =
+        FirebaseFirestore.instance.collection('users').doc(uid);
 
-        if (userDoc.exists) {
+        // Fetch both user and attendance documents concurrently
+        final results = await Future.wait([
+          userRef.get(),
+          userRef.collection('attendance').doc('currentSemester').get(),
+        ]);
+
+        DocumentSnapshot<Map<String, dynamic>> userDoc = results[0];
+        DocumentSnapshot<Map<String, dynamic>> attendanceDoc = results[1];
+
+        if (userDoc.exists && attendanceDoc.exists) {
+          // Get user data
+          Map<String, dynamic>? userData = userDoc.data();
+          // Get attendance data
+          Map<String, dynamic>? attendanceData = attendanceDoc.data();
+
+          // Parse numerical values safely
+          double present = (attendanceData?['totalPresent'] ?? 0).toDouble();
+          double total = (attendanceData?['totalHoursConducted'] ?? 0).toDouble();
+          String overallPercentage = '0';
+
+          if (total > 0) {
+            double percentage = (present / total) * 100;
+            overallPercentage = percentage.toStringAsFixed(2);
+          }
+
           setState(() {
-            _playerName = userDoc.data()?['name'] ?? 'Player';
-            _playerRegNo = userDoc.data()?['regNo'] ?? 'E404';
+            _playerName = userData?['name'] ?? 'Player';
+            _playerRegNo = userData?['regNo'] ?? 'E404';
+            _present = present.toStringAsFixed(0);
+            _total = total.toStringAsFixed(0);
+            _overall = overallPercentage;
             _isLoading = false;
           });
         } else {
           setState(() {
-            _playerName = 'Player';
-            _playerRegNo = 'E404_1';
+            if (userDoc.exists) {
+              Map<String, dynamic>? userData = userDoc.data();
+              _playerName = userData?['name'] ?? 'Player';
+              _playerRegNo = userData?['regNo'] ?? 'E404';
+            } else {
+              _playerName = 'Player';
+              _playerRegNo = 'E404';
+            }
+            _present = '0';
+            _total = '0';
+            _overall = '0';
             _isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User data not found.')),
+            const SnackBar(content: Text('Attendance data not found.')),
           );
         }
       } else {
         setState(() {
           _playerName = 'Player';
-          _playerRegNo = 'E404_2';
+          _playerRegNo = 'E404';
+          _present = '0';
+          _total = '0';
+          _overall = '0';
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -68,14 +107,20 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
     } catch (e) {
       setState(() {
         _playerName = 'Player';
-        _playerRegNo = 'E404_3';
+        _playerRegNo = 'E404';
+        _present = '0';
+        _total = '0';
+        _overall = '0';
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching user data: $e')),
+        SnackBar(content: Text('Error fetching data: $e')),
       );
     }
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -98,10 +143,10 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
               screenHeight: screenHeight,
               userName: _playerName,
               userId: _playerRegNo,
-              overall: '$_overall%',
-              present: present,
-              total: total,
-              imageURL: imageURL,
+              overall: '$_overall',
+              present: _present,
+              total: _total,
+              imageURL: _imageURL,
             ),
             SizedBox(height: screenHeight * 0.03),
             Row(
@@ -117,7 +162,15 @@ class _PlayerHomePageState extends State<PlayerHomePage> {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              Student_MainHomePageNavAttendance()),
+                              Student_MainHomePageNavAttendance(
+                                playerName: _playerName,
+                                playerRegNo: _playerRegNo,
+                                overall: _overall,
+                                present: _present,
+                                total: _total,
+                                imageURL: _imageURL,
+
+                              )),
                     );
                   },
                 ),
@@ -331,7 +384,7 @@ class StatWidget extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 5,),
         ],
       ),
     );
