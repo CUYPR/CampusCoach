@@ -209,7 +209,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
 
                 // Create a new user in Firebase Authentication with the login email
                 UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-                    email: loginEmail, password: 'Temporary@123'); // Use a strong temporary password
+                    email: loginEmail, password: '123456'); // Use a strong temporary password
 
                 User? newUser = userCredential.user;
                 String newUserUid = newUser?.uid ?? '';

@@ -31,10 +31,12 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
 
   Future<void> _updatePassword() async {
     if (!_formKey.currentState!.validate()) {
+      print('Form validation failed');
       return;
     }
 
     String newPassword = _newPasswordController.text.trim();
+    print('New password: $newPassword');
 
     setState(() {
       _isLoading = true;
@@ -43,32 +45,45 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Optional: Re-authenticate the user if required
-        // Uncomment the following lines if you implement re-authentication
-        /*
+        print('Current user ID: ${user.uid}');
+
+        // Re-authenticate the user
         bool isReauthenticated = await _reauthenticateUser();
         if (!isReauthenticated) {
+          print('Re-authentication failed');
           setState(() {
             _isLoading = false;
           });
           return;
+        } else {
+          print('Re-authentication successful');
         }
-        */
 
         // Update password in Firebase Authentication
         await user.updatePassword(newPassword);
+        print('Password updated in Firebase Authentication');
 
         // Fetch user data from Firestore
         DocumentSnapshot<Map<String, dynamic>> userData =
         await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
 
         if (userData.exists) {
-          String role = userData.data()?['role'] ?? 'No Role';
+          Map<String, dynamic>? data = userData.data();
+          print('User data from Firestore: $data');
+
+          String role = data?['role'] ?? 'No Role';
+          print('User role: $role');
+
+          // Prepare update data
+          Map<String, dynamic> updateData = {
+            'isFirstLogin': false,
+            // 'updatedAt': FieldValue.serverTimestamp(),
+          };
+          print('Update data: $updateData');
 
           // Update 'isFirstLogin' to false
-          await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-            'isFirstLogin': false,
-          });
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).update(updateData);
+          print('User document updated in Firestore');
 
           // Navigate to the appropriate home page based on role
           if (role == 'Coach') {
@@ -88,23 +103,27 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
             );
           } else {
             // Handle unknown role
+            print('Unknown role');
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Unknown role. Please contact support.')),
             );
           }
         } else {
           // User data not found
+          print('User data not found in Firestore');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('User data not found.')),
           );
         }
       } else {
         // No user is signed in
+        print('No user is currently signed in');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No user is currently signed in.')),
         );
       }
     } on FirebaseAuthException catch (e) {
+      print('FirebaseAuthException: ${e.code} - ${e.message}');
       String message;
       switch (e.code) {
         case 'weak-password':
@@ -119,7 +138,13 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
+    } on FirebaseException catch (e) {
+      print('FirebaseException: ${e.code} - ${e.message}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: ${e.message}')),
+      );
     } catch (e) {
+      print('Exception: ${e.toString()}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: ${e.toString()}')),
       );
@@ -130,13 +155,70 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
     }
   }
 
+
   // Optional: Re-authenticate user if necessary
   Future<bool> _reauthenticateUser() async {
-    // Implement re-authentication if required
-    // For example, prompt user to enter current password
-    // Return true if re-authenticated successfully, else false
-    return true; // Placeholder
+    String? currentPassword;
+    // Prompt the user to enter their current password
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Re-authenticate'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Please enter your current password to confirm:'),
+            TextField(
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Current Password'),
+              onChanged: (value) {
+                currentPassword = value;
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(), // Cancel
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Confirm
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (currentPassword == null || currentPassword!.isEmpty) {
+      print('User canceled re-authentication or did not enter a password');
+      return false; // User canceled or did not enter a password
+    }
+
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.email != null) {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPassword!,
+        );
+
+        await user.reauthenticateWithCredential(credential);
+        print('Re-authentication successful');
+        return true; // Re-authentication successful
+      }
+    } on FirebaseAuthException catch (e) {
+      print('Re-authentication failed: ${e.code} - ${e.message}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Re-authentication failed: ${e.message}')),
+      );
+    }
+    return false; // Re-authentication failed
   }
+
+
 
   @override
   Widget build(BuildContext context) {
