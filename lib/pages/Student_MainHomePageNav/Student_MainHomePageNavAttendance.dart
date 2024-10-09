@@ -28,7 +28,7 @@ class Student_MainHomePageNavAttendance extends StatelessWidget {
     // Get screen size using MediaQuery
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    double largeTextSize = screenWidth * 0.08;
+    double largeTextSize = screenWidth * 0.07;
     double smallTextSize = screenWidth * 0.04;
 
     return Scaffold(

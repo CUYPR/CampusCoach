@@ -212,7 +212,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               SizedBox(height: 10.0),
                               Padding(
-                                padding: EdgeInsets.only(left: 5.0, bottom: 40.0), // Custom padding for 'Log into the CampusCoach.'
+                                padding: EdgeInsets.only(left: 5.0, bottom: 25.0), // Custom padding for 'Log into the CampusCoach.'
                                 child: Text(
                                   'Log into the CampusCoach.',
                                   style: TextStyle(
@@ -230,7 +230,7 @@ class _LoginPageState extends State<LoginPage> {
                         TextField(
                           controller: _userIdController,
                           decoration: const InputDecoration(
-                            labelText: 'User ID',
+                            labelText: 'Register Number',
                             filled: true,
                             fillColor: Colors.white70,
                             border: OutlineInputBorder(),

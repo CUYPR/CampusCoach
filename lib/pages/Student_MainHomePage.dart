@@ -255,7 +255,7 @@ class HeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double largeTextSize = screenWidth * 0.08;
+    double largeTextSize = screenWidth * 0.07;
     double smallTextSize = screenWidth * 0.04;
 
     return Center(
