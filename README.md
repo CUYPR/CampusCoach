@@ -1,5 +1,7 @@
 # CampusCoach
 
+![iPhone 13 Pro (1)](https://github.com/user-attachments/assets/518692fd-e6c8-4fca-9a0a-c86dc02cd014)
+
 ### Docs: 
 
 <p>
@@ -7,5 +9,3 @@ The integration of sports programs within educational institutions requires effi
 </p>
 
 ![iPhone 16 Pro (1)](https://github.com/user-attachments/assets/b04e848e-41d1-4148-8473-daea7a94de23)
-
-![iPhone 13 Pro (1)](https://github.com/user-attachments/assets/518692fd-e6c8-4fca-9a0a-c86dc02cd014)
