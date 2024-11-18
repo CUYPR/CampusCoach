@@ -1,16 +1,11 @@
-# campus_coach_login_01
+# CampusCoach
 
-A new Flutter project.
+### Docs: 
 
-## Getting Started
+<p>
+The integration of sports programs within educational institutions requires efficient systems to manage attendance and leave requests. Traditional methods fail to meet the evolving needs of modern sports programs due to inefficiencies and inaccuracies. Campus Coach tackles these challenges with a mobile application that simplifies attendance tracking, leave requests, and scheduling for both coaches and student-athletes. Built with Flutter for cross-platform compatibility and Firebase for real-time data synchronization, the app empowers users with tools to manage and access records seamlessly. This solution enhances operational efficiency and promotes engagement, fostering a collaborative sports environment.
+</p>
 
-This project is a starting point for a Flutter application.
+![iPhone 16 Pro (1)](https://github.com/user-attachments/assets/b04e848e-41d1-4148-8473-daea7a94de23)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![iPhone 13 Pro (1)](https://github.com/user-attachments/assets/518692fd-e6c8-4fca-9a0a-c86dc02cd014)
